@@ -3,6 +3,8 @@ import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class Server {
@@ -10,6 +12,7 @@ public class Server {
 	private static final int sPort = 8000;   //The server will be listening on this port number
 	static Map<Integer,Socket> clients = new HashMap<Integer,Socket>();
 	static Map<Integer,ObjectOutputStream> clientOutputStreams = new HashMap<Integer,ObjectOutputStream>();
+	static Set<Integer> clientSet=new HashSet<Integer>();
 
 	
 	public static void main(String[] args) throws Exception {
@@ -19,8 +22,7 @@ public class Server {
         	try {
             		while(true) {
             				new Handler(listener.accept(),clientNum).start();
-            				BroadCast broadCast=new BroadCast(clients.get(clientNum),"Client"+clientNum+" is Connected");
-            				broadCast.broadCastToAll(clientNum);
+            				System.out.println("Client"+clientNum+" is Connected");
             				clientNum++;
             			}
         	} finally {
@@ -45,6 +47,7 @@ public class Server {
             	this.connection = connection;
 	    		this.no = no;
 	    		clients.put(this.no, this.connection);
+	    		clientSet.add(this.no);
         	}
 
         public void run() {
@@ -55,11 +58,21 @@ public class Server {
 			while (true){
 				try {
 					String m=(String)in.readObject();
-					System.out.println(m.equals("broadcast"));
-					if(m.equals("broadcast")){
-						BroadCast broadCast1=new BroadCast(clients.get(this.no),m);
+					List<String> list = new ArrayList<String>();
+					Matcher match = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(m);
+					while (match.find()){
+					    list.add(match.group(1).replace("\"", ""));
+					}
+					if(list.get(0).equals("broadcast")){
+						BroadCast broadCast1=new BroadCast(clients.get(this.no),list.get(2));
           				broadCast1.broadCastToAll(this.no);
           				m="";
+					}else if(list.get(0).equals("blockcast")){
+						BroadCast broadCast2=new BroadCast(clients.get(this.no),list.get(2));
+          				broadCast2.broadCastToOne(this.no,Integer.parseInt(list.get(3)));
+					}else if(list.get(0).equals("getClients")){
+						BroadCast broadCast3=new BroadCast(clients.get(this.no));
+						broadCast3.getAllClientDetails(this.no);
 					}
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
@@ -67,7 +80,11 @@ public class Server {
 			}
 		}
 		catch(IOException ioException){
-			System.out.println("Disconnect with Client " + no);
+			System.out.println("Disconnect with Client " + this.no);
+			clients.remove(this.no);
+			clientOutputStreams.remove(this.no);
+			clientSet.remove(this.no);
+
 		}
 	}
 
@@ -103,22 +120,64 @@ public class Server {
         	this.connection=newClientConnected;
         }
         
-        public void broadCastToAll(int clientNum){
-        	int i=0;
-        	for(i=0;i<clientOutputStreams.size();i++){
-        		if(clients.containsKey(i) && clients.get(i) !=clients.get(clientNum)){
-        			try {
-        	        	out=clientOutputStreams.get(i);
-						out.writeObject(this.broadCastMessage);
-						out.flush();
-						//out.reset();
-						
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-        		}
+        public void broadCastToOne(int sender,int receiver ){
+        	Set set= clientOutputStreams.entrySet();
+        	Iterator it=set.iterator();
+        	String message;
+        	while(it.hasNext()){
+        		Map.Entry pair=(Map.Entry)it.next();
+	        	message="@"+"client"+sender+":"+this.broadCastMessage;
+                if((int)pair.getKey()!=sender && (int)pair.getKey()==receiver){
+                	try{
+                		out=(ObjectOutputStream)pair.getValue();
+                		out.writeObject(message);
+ 	    	        	out.flush();
+ 	    	        	it.remove(); 
+                	} catch (IOException e) {
+    					e.printStackTrace();
+    				}
+                }
         	}
         }
         
+        public void broadCastToAll(int clientNum){
+        	 String message;
+        	 Set set = clientOutputStreams.entrySet();
+        	 Iterator it = set.iterator();
+        	 while(it.hasNext()){
+        		 Map.Entry pair = (Map.Entry)it.next();
+ 	        	 message="@"+"client"+clientNum+":"+this.broadCastMessage;
+ 	        	 if((int)pair.getKey()!=clientNum){
+ 	        		 try{
+ 	    	        	 out=(ObjectOutputStream)pair.getValue();
+ 	    	        	 out.writeObject(message);
+ 	    	        	 out.flush();
+ 	    	        	 it.remove(); 
+ 	           		 } catch  (IOException e) {
+ 	   						e.printStackTrace();
+ 	   			     }
+ 	        	 }
+        	 }
+        }
+        
+        public void getAllClientDetails(int clientNum){
+        	int i=0;
+        	String message;
+        	Set clientSet=clients.keySet();
+        	System.out.println(clients.size());
+        	System.out.println(clientNum);
+        	for(i=0;i<clients.size();i++){
+        			try {
+        	        	out=clientOutputStreams.get(clientNum);
+        	        	System.out.println(clientSet);
+        	        	message="Client"+clientSet.toArray()[i]+" is connected";
+						out.writeObject(message);
+						out.flush();						
+					} catch (IOException e) {
+						e.printStackTrace();
+					}	
+        	}
+        }
+                
     }
 }
