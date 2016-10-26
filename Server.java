@@ -57,22 +57,45 @@ public class Server {
 			in = new ObjectInputStream(connection.getInputStream());
 			while (true){
 				try {
+					String n="";
+					int length=0;
+					byte[]b=null;
 					String m=(String)in.readObject();
+					String type=(String)in.readObject();
+					//System.out.println(m+" "+type);
+					if(type.equals("FILE")){
+						n=(String)in.readObject();
+						length=(int)in.readObject();
+						b=new byte[length];
+					    in.readFully(b, 0, length);
+						//System.out.println(new String(b));
+						//System.out.println(n+" "+length);	
+					}
+						
 					List<String> list = new ArrayList<String>();
 					Matcher match = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(m);
 					while (match.find()){
 					    list.add(match.group(1).replace("\"", ""));
 					}
-					if(list.get(0).equals("broadcast")){
+					//System.out.println(m+" "+list);
+					if(list.get(0).equals("broadcast") && list.get(1).equals("message")){
 						BroadCast broadCast1=new BroadCast(clients.get(this.no),list.get(2));
           				broadCast1.broadCastToAll(this.no);
           				m="";
-					}else if(list.get(0).equals("blockcast")){
+					}else if(list.get(0).equals("blockcast") && list.get(1).equals("message")){
 						BroadCast broadCast2=new BroadCast(clients.get(this.no),list.get(2));
           				broadCast2.broadCastToOne(this.no,Integer.parseInt(list.get(3)));
+          				m="";
 					}else if(list.get(0).equals("getClients")){
 						BroadCast broadCast3=new BroadCast(clients.get(this.no));
 						broadCast3.getAllClientDetails(this.no);
+						m="";
+					}else if(list.get(0).equals("broadcast") && list.get(1).equals("file")){
+						BroadCast broadCast4=new BroadCast(clients.get(this.no));
+						broadCast4.broadCastFileToAll(this.no,n,b,length);
+					}else if(list.get(0).equals("blockcast") && list.get(1).equals("file")){
+						BroadCast broadCast4=new BroadCast(clients.get(this.no));
+						broadCast4.broadCastFileToOne(this.no,Integer.parseInt(list.get(3)),n,b,length);
 					}
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
@@ -80,6 +103,7 @@ public class Server {
 			}
 		}
 		catch(IOException ioException){
+			//ioException.printStackTrace();
 			System.out.println("Disconnect with Client " + this.no);
 			clients.remove(this.no);
 			clientOutputStreams.remove(this.no);
@@ -130,9 +154,9 @@ public class Server {
                 if((int)pair.getKey()!=sender && (int)pair.getKey()==receiver){
                 	try{
                 		out=(ObjectOutputStream)pair.getValue();
+        	        	out.writeObject("MESSAGE");
                 		out.writeObject(message);
  	    	        	out.flush();
- 	    	        	it.remove(); 
                 	} catch (IOException e) {
     					e.printStackTrace();
     				}
@@ -150,9 +174,9 @@ public class Server {
  	        	 if((int)pair.getKey()!=clientNum){
  	        		 try{
  	    	        	 out=(ObjectOutputStream)pair.getValue();
+ 	    	        	 out.writeObject("MESSAGE");
  	    	        	 out.writeObject(message);
  	    	        	 out.flush();
- 	    	        	 it.remove(); 
  	           		 } catch  (IOException e) {
  	   						e.printStackTrace();
  	   			     }
@@ -164,12 +188,12 @@ public class Server {
         	int i=0;
         	String message;
         	Set clientSet=clients.keySet();
-        	System.out.println(clients.size());
-        	System.out.println(clientNum);
+        	//System.out.println(clients.size());
+        	//System.out.println(clientNum);
         	for(i=0;i<clients.size();i++){
         			try {
         	        	out=clientOutputStreams.get(clientNum);
-        	        	System.out.println(clientSet);
+        	        	//System.out.println(clientSet);
         	        	message="Client"+clientSet.toArray()[i]+" is connected";
 						out.writeObject(message);
 						out.flush();						
@@ -177,6 +201,56 @@ public class Server {
 						e.printStackTrace();
 					}	
         	}
+        }
+        
+        public void broadCastFileToAll(int clientNum,String fileName,byte[]fileInBytes,int length){
+        	String message="";
+       	    Set set = clientOutputStreams.entrySet();
+       	    Iterator it = set.iterator();
+       	    while(it.hasNext()){
+       		 Map.Entry pair = (Map.Entry)it.next();
+	        	 message="@"+"client"+clientNum+":"+"file-"+fileName+" is received";
+	        	 if((int)pair.getKey()!=clientNum){
+	        		 try{
+	    	        	 out=(ObjectOutputStream)pair.getValue();
+	     	        	 out.writeObject("FILE");
+	     	        	 out.writeObject(message);
+	     	        	 //System.out.println(fileName);
+	    	        	 out.writeObject(fileName);
+	    	        	 out.writeInt(length);
+	    	        	 out.writeObject("Client"+(int)pair.getKey());
+	    	        	 out.write(fileInBytes,0,length);
+	    	        	 out.flush();
+	           		 } catch  (IOException e) {
+	   						e.printStackTrace();
+	   			     }
+	        	 }
+       	     }
+        }
+        
+        public void broadCastFileToOne(int sender,int receiver,String fileName,byte fileInBytes[],int length){
+        	String message="";
+       	    Set set = clientOutputStreams.entrySet();
+       	    Iterator it = set.iterator();
+       	    while(it.hasNext()){
+       		 Map.Entry pair = (Map.Entry)it.next();
+	        	 message="@"+"client"+sender+":"+"file-"+fileName+" is received";
+	        	 if((int)pair.getKey()!=sender && (int)pair.getKey()==receiver){
+	        		 try{
+	    	        	 out=(ObjectOutputStream)pair.getValue();
+	     	        	 out.writeObject("FILE");
+	     	        	 out.writeObject(message);
+	     	        	 //System.out.println(fileName);
+	    	        	 out.writeObject(fileName);
+	    	        	 out.writeInt(length);
+	    	        	 out.writeObject("Client"+(int)pair.getKey());
+	    	        	 out.write(fileInBytes,0,length);
+	    	        	 out.flush();
+	           		 } catch  (IOException e) {
+	   						e.printStackTrace();
+	   			     }
+	        	 }
+       	     }
         }
                 
     }
