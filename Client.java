@@ -44,7 +44,7 @@ public class Client {
 								String fileName="";
 								int fileLength=0;
 								String clientName="";
-								System.out.println(type);
+								//System.out.println(type);
 								byte b[]=null;									
 								 if(type.equals("FILE")){
 									fileName=(String)in.readObject();
@@ -52,7 +52,7 @@ public class Client {
 									clientName=(String)in.readObject();
 									b=new byte[fileLength];
 									in.readFully(b, 0, fileLength);
-									System.out.println("File Length="+fileLength);
+									//System.out.println("File Length="+fileLength);
 									if(Files.isDirectory(Paths.get(filePath+clientName))){
 										FileOutputStream fos = new FileOutputStream(filePath+clientName+"/"+fileName);
 										fos.write(b);
@@ -173,6 +173,9 @@ public class Client {
 		System.out.println("broadcasting a message: broadcast message <\"message In quotes\">");
 		System.out.println("Blockcast as message : blockcast message <\"message In quotes\"> <clientnum[starts from 0 for the first client]> ");
 		System.out.println("Checking For Available clients: getClients");
+		System.out.println("Broadcast as File : blockcast file <\"filePath In quotes\"> ");
+		System.out.println("Blockcast as File : blockcast file <\"filePath In quotes\"> <clientnum[starts from 0 for the first client]> ");
+
 	}
 	//main method
 	public static void main(String args[])
