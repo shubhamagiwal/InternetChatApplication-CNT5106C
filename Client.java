@@ -26,6 +26,7 @@ public class Client {
 		try{
 			//create a socket to connect to the server
 			requestSocket = new Socket(serverName, portNumber);
+			commandList();
 			//get Input from standard input
 			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
 			
@@ -44,7 +45,6 @@ public class Client {
 								String fileName="";
 								int fileLength=0;
 								String clientName="";
-								//System.out.println(type);
 								byte b[]=null;									
 								 if(type.equals("FILE")){
 									fileName=(String)in.readObject();
@@ -52,7 +52,6 @@ public class Client {
 									clientName=(String)in.readObject();
 									b=new byte[fileLength];
 									in.readFully(b, 0, fileLength);
-									//System.out.println("File Length="+fileLength);
 									if(Files.isDirectory(Paths.get(filePath+clientName))){
 										FileOutputStream fos = new FileOutputStream(filePath+clientName+"/"+fileName);
 										fos.write(b);
@@ -138,23 +137,6 @@ public class Client {
 		}
 	}
 
-//	void fileStream(){
-//		final Thread fileThread = new Thread() {
-//			@Override
-//			public void run() {
-//				try {
-//					
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				} finally {
-//					if (in != null) {
-//						in.close();
-//					}
-//				}
-//			}
-//		};		
-//		fileThread.start();
-//	}
 	//send a message to the output stream
 	void sendMessage(String msg)
 	{
@@ -170,18 +152,18 @@ public class Client {
 	
 	void commandList(){
 		System.out.println("The Commands available for this program are as follows:");
-		System.out.println("broadcasting a message: broadcast message <\"message In quotes\">");
-		System.out.println("Blockcast as message : blockcast message <\"message In quotes\"> <clientnum[starts from 0 for the first client]> ");
+		System.out.println("Broadcasting a message: broadcast message <\"message In quotes\">");
+		System.out.println("Unicasting a message : unicast message <\"message In quotes\"> <clientnum[starts from 0 for the first client]> ");
+		System.out.println("Blockcasting a message : blockcast message <\"message In quotes\"> <clientnum[starts from 0 for the first client] which you don't want to sent to.> ");
 		System.out.println("Checking For Available clients: getClients");
-		System.out.println("Broadcast as File : blockcast file <\"filePath In quotes\"> ");
-		System.out.println("Blockcast as File : blockcast file <\"filePath In quotes\"> <clientnum[starts from 0 for the first client]> ");
-
+		System.out.println("Broadcasting a File : broadcast file <\"filePath In quotes\"> ");
+		System.out.println("Unicasting a File : unicast file <\"filePath In quotes\"> <clientnum[starts from 0 for the first client]> ");
+		System.out.println("Blockcasting a file : blockcast file <\"filePath In quotes\"> <clientnum[starts from 0 for the first client] which you don't want to send it too>");
 	}
 	//main method
 	public static void main(String args[])
 	{
 		Client client = new Client();
-		client.commandList();
 		client.run();
 	}
 
