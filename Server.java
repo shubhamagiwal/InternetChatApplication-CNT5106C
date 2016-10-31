@@ -82,9 +82,13 @@ public class Server {
 						BroadCast broadCast1=new BroadCast(clients.get(this.no),list.get(2));
           				broadCast1.broadCastToAll(this.no);
           				m="";
-					}else if(list.get(0).equals("blockcast") && list.get(1).equals("message")){
+					}else if(list.get(0).equals("unicast") && list.get(1).equals("message")){
 						BroadCast broadCast2=new BroadCast(clients.get(this.no),list.get(2));
           				broadCast2.broadCastToOne(this.no,Integer.parseInt(list.get(3)));
+          				m="";
+					}else if(list.get(0).equals("blockcast") && list.get(1).equals("message")){
+						BroadCast broadCast2=new BroadCast(clients.get(this.no),list.get(2));
+          				broadCast2.broadCastMessageToAllExceptOne(this.no,Integer.parseInt(list.get(3)));
           				m="";
 					}else if(list.get(0).equals("getClients")){
 						BroadCast broadCast3=new BroadCast(clients.get(this.no));
@@ -93,9 +97,12 @@ public class Server {
 					}else if(list.get(0).equals("broadcast") && list.get(1).equals("file")){
 						BroadCast broadCast4=new BroadCast(clients.get(this.no));
 						broadCast4.broadCastFileToAll(this.no,n,b,length);
-					}else if(list.get(0).equals("blockcast") && list.get(1).equals("file")){
+					}else if(list.get(0).equals("unicast") && list.get(1).equals("file")){
 						BroadCast broadCast4=new BroadCast(clients.get(this.no));
 						broadCast4.broadCastFileToOne(this.no,Integer.parseInt(list.get(3)),n,b,length);
+					}else if(list.get(0).equals("blockcast") && list.get(1).equals("file")){
+						BroadCast broadCast4=new BroadCast(clients.get(this.no));
+						broadCast4.broadCastFileToAllExceptOne(this.no,Integer.parseInt(list.get(3)),n,b,length);
 					}
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
@@ -188,12 +195,9 @@ public class Server {
         	int i=0;
         	String message;
         	Set clientSet=clients.keySet();
-        	//System.out.println(clients.size());
-        	//System.out.println(clientNum);
         	for(i=0;i<clients.size();i++){
         			try {
         	        	out=clientOutputStreams.get(clientNum);
-        	        	//System.out.println(clientSet);
         	        	message="Client"+clientSet.toArray()[i]+" is connected";
 						out.writeObject(message);
 						out.flush();						
@@ -241,6 +245,50 @@ public class Server {
 	     	        	 out.writeObject("FILE");
 	     	        	 out.writeObject(message);
 	     	        	 //System.out.println(fileName);
+	    	        	 out.writeObject(fileName);
+	    	        	 out.writeInt(length);
+	    	        	 out.writeObject("Client"+(int)pair.getKey());
+	    	        	 out.write(fileInBytes,0,length);
+	    	        	 out.flush();
+	           		 } catch  (IOException e) {
+	   						e.printStackTrace();
+	   			     }
+	        	 }
+       	     }
+        }
+        
+        public void broadCastMessageToAllExceptOne(int sender,int nonReceiver){
+        	Set set= clientOutputStreams.entrySet();
+        	Iterator it=set.iterator();
+        	String message;
+        	while(it.hasNext()){
+        		Map.Entry pair=(Map.Entry)it.next();
+	        	message="@"+"client"+sender+":"+this.broadCastMessage;
+                if((int)pair.getKey()!=sender && (int)pair.getKey()!=nonReceiver){
+                	try{
+                		out=(ObjectOutputStream)pair.getValue();
+        	        	out.writeObject("MESSAGE");
+                		out.writeObject(message);
+ 	    	        	out.flush();
+                	} catch (IOException e) {
+    					e.printStackTrace();
+    				}
+                }
+        	}
+        }
+        
+        public void broadCastFileToAllExceptOne(int sender,int nonReceiver,String fileName,byte fileInBytes[],int length){
+        	String message="";
+       	    Set set = clientOutputStreams.entrySet();
+       	    Iterator it = set.iterator();
+       	    while(it.hasNext()){
+       		 Map.Entry pair = (Map.Entry)it.next();
+	        	 message="@"+"client"+sender+":"+"file-"+fileName+" is received";
+	        	 if((int)pair.getKey()!=sender && (int)pair.getKey()!=nonReceiver){
+	        		 try{
+	    	        	 out=(ObjectOutputStream)pair.getValue();
+	     	        	 out.writeObject("FILE");
+	     	        	 out.writeObject(message);
 	    	        	 out.writeObject(fileName);
 	    	        	 out.writeInt(length);
 	    	        	 out.writeObject("Client"+(int)pair.getKey());
