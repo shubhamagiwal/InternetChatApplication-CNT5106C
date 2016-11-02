@@ -18,8 +18,64 @@ public class Client {
 	String serverName="localhost";
 	int portNumber=8000;
 	String filePath="/Users/shubhamagiwal/Desktop/CNT5106C/CNT5106C_localFiles/CNT5106C_Fall2016/src/";
+	int clientNum;
+	String clientName="";
+	int broadCastNumberOfParameters=3;
+	int blockCastNumberOfParameters=4;
+	int unicastCastNumberOfParameters=4;
 
+	
 	public Client() {}
+	
+	boolean commandVerification (List command){
+		boolean flag=false;
+		switch ((String)command.get(0)){
+		case "broadcast":
+			if(command.size()==broadCastNumberOfParameters){
+				if(command.get(1).equals("message") || command.get(1).equals("file")){
+					flag=true;
+				}
+				else{
+					System.err.println("The given command "+ command.get(0)+" with parameter"+command.get(1) +" is not supported");
+
+				}
+			}else{
+				System.err.println("The "+command.get(0)+" command has less numbers of parameters" );
+			}
+			break;
+		case "blockcast":
+			if(command.size()==blockCastNumberOfParameters){
+				if(command.get(1).equals("message") || command.get(1).equals("file")){
+					flag=true;
+				}
+				else{
+					System.err.println("The given command "+ command.get(0)+" with parameter"+command.get(1) +" is not supported");
+				}
+			}else{
+				System.err.println("The "+command.get(0)+" command has less numbers of parameters" );
+			}
+		case "unicast":
+			if(command.size()==unicastCastNumberOfParameters){
+				if(command.get(1).equals("message") || command.get(1).equals("file")){
+					flag=true;
+				}
+				else{
+					System.err.println("The given command "+ command.get(0)+" with parameter"+command.get(1) +" is not supported");
+				}
+			}else{
+				System.err.println("The "+command.get(0)+" command has less numbers of parameters" );
+			}
+		case "getClients": flag=true; 
+		                    break;
+		case "getId": flag=true;
+					  break;
+		
+		default:
+			System.err.println("The given command "+ command.get(0)+" is not supported");
+		}
+		
+		return flag;
+	}
 
 	void run()
 	{
@@ -28,9 +84,7 @@ public class Client {
 			requestSocket = new Socket(serverName, portNumber);
 			commandList();
 			//get Input from standard input
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-			
-		
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));		
 			// Starting a Thread to receive data from Server to the client
 			final Thread receiveThread = new Thread(){
 				public void run() {
@@ -44,7 +98,7 @@ public class Client {
 								MESSAGE = (String)in.readObject();
 								String fileName="";
 								int fileLength=0;
-								String clientName="";
+								//String clientName="";
 								byte b[]=null;									
 								 if(type.equals("FILE")){
 									fileName=(String)in.readObject();
@@ -89,31 +143,36 @@ public class Client {
 						in = new Scanner(System.in);
 						while (true) {
 							String line = in.nextLine();
-							out.writeObject(line);
 							List<String> list = new ArrayList<String>();
 							Matcher match = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(line);
 							while (match.find()){
 							    list.add(match.group(1).replace("\"", ""));
 							}
-							if(list.size()>1 && list.get(1).equals("file")){
-								File f2=new File(list.get(2));
-								out.writeObject("FILE");
-								out.writeObject(f2.getName());
-								out.writeObject((int)f2.length());
-								byte [] fileBytes=new byte[(int)f2.length()];
-								InputStream is = new FileInputStream(f2);
-								 int c = 0;
-							        while ((c = is.read(fileBytes, 0, fileBytes.length)) > 0) {
-							            out.write(fileBytes, 0, c);
-							        }
-							  
-							        
-							}else if(list.size()>1 && list.get(1).equals("message")){
-								out.writeObject("MESSAGE");
-							}else if(list.size()==1){
-								out.writeObject("GETCLIENTS");
+							
+							if(commandVerification(list)){
+								out.writeObject(line);
+								if(list.size()>1 && list.get(1).equals("file")){
+									File f2=new File(list.get(2));
+									out.writeObject("FILE");
+									out.writeObject(f2.getName());
+									out.writeObject((int)f2.length());
+									byte [] fileBytes=new byte[(int)f2.length()];
+									InputStream is = new FileInputStream(f2);
+									 int c = 0;
+								        while ((c = is.read(fileBytes, 0, fileBytes.length)) > 0) {
+								            out.write(fileBytes, 0, c);
+								        }        
+								}else if(list.size()>1 && list.get(1).equals("message")){
+									out.writeObject("MESSAGE");
+								}else if(list.size()==1 && list.get(0).equals("getClients")){
+									out.writeObject("GETCLIENTS");
+								}else if(list.size()==1 && list.get(0).equals("getId")){
+									out.writeObject("GETID");
+								}
+								out.flush();
+							}else{
+								commandList();
 							}
-							out.flush();
 						}
 					} catch (Exception e) {
 					} finally {
@@ -136,7 +195,9 @@ public class Client {
 			ioException.printStackTrace();
 		}
 	}
-
+	
+	
+	
 	//send a message to the output stream
 	void sendMessage(String msg)
 	{
@@ -151,7 +212,7 @@ public class Client {
 	}
 	
 	void commandList(){
-		System.out.println("The Commands available for this program are as follows:");
+		System.out.println("The Commands available for this Application are as follows:");
 		System.out.println("Broadcasting a message: broadcast message <\"message In quotes\">");
 		System.out.println("Unicasting a message : unicast message <\"message In quotes\"> <clientnum[starts from 0 for the first client]> ");
 		System.out.println("Blockcasting a message : blockcast message <\"message In quotes\"> <clientnum[starts from 0 for the first client] which you don't want to sent to.> ");
@@ -159,6 +220,7 @@ public class Client {
 		System.out.println("Broadcasting a File : broadcast file <\"filePath In quotes\"> ");
 		System.out.println("Unicasting a File : unicast file <\"filePath In quotes\"> <clientnum[starts from 0 for the first client]> ");
 		System.out.println("Blockcasting a file : blockcast file <\"filePath In quotes\"> <clientnum[starts from 0 for the first client] which you don't want to send it too>");
+		System.out.println("Get Your Client Id: getId");
 	}
 	//main method
 	public static void main(String args[])

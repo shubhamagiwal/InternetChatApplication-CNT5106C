@@ -62,14 +62,11 @@ public class Server {
 					byte[]b=null;
 					String m=(String)in.readObject();
 					String type=(String)in.readObject();
-					//System.out.println(m+" "+type);
 					if(type.equals("FILE")){
 						n=(String)in.readObject();
 						length=(int)in.readObject();
 						b=new byte[length];
 					    in.readFully(b, 0, length);
-						//System.out.println(new String(b));
-						//System.out.println(n+" "+length);	
 					}
 						
 					List<String> list = new ArrayList<String>();
@@ -77,23 +74,19 @@ public class Server {
 					while (match.find()){
 					    list.add(match.group(1).replace("\"", ""));
 					}
-					//System.out.println(m+" "+list);
+										
 					if(list.get(0).equals("broadcast") && list.get(1).equals("message")){
 						BroadCast broadCast1=new BroadCast(clients.get(this.no),list.get(2));
           				broadCast1.broadCastToAll(this.no);
-          				m="";
 					}else if(list.get(0).equals("unicast") && list.get(1).equals("message")){
 						BroadCast broadCast2=new BroadCast(clients.get(this.no),list.get(2));
           				broadCast2.broadCastToOne(this.no,Integer.parseInt(list.get(3)));
-          				m="";
 					}else if(list.get(0).equals("blockcast") && list.get(1).equals("message")){
 						BroadCast broadCast2=new BroadCast(clients.get(this.no),list.get(2));
           				broadCast2.broadCastMessageToAllExceptOne(this.no,Integer.parseInt(list.get(3)));
-          				m="";
 					}else if(list.get(0).equals("getClients")){
 						BroadCast broadCast3=new BroadCast(clients.get(this.no));
 						broadCast3.getAllClientDetails(this.no);
-						m="";
 					}else if(list.get(0).equals("broadcast") && list.get(1).equals("file")){
 						BroadCast broadCast4=new BroadCast(clients.get(this.no));
 						broadCast4.broadCastFileToAll(this.no,n,b,length);
@@ -103,6 +96,9 @@ public class Server {
 					}else if(list.get(0).equals("blockcast") && list.get(1).equals("file")){
 						BroadCast broadCast4=new BroadCast(clients.get(this.no));
 						broadCast4.broadCastFileToAllExceptOne(this.no,Integer.parseInt(list.get(3)),n,b,length);
+					}else if(list.get(0).equals("getId")){
+						BroadCast broadCast3=new BroadCast(clients.get(this.no));
+						broadCast3.sendClientId(this.no);
 					}
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
@@ -110,28 +106,20 @@ public class Server {
 			}
 		}
 		catch(IOException ioException){
-			//ioException.printStackTrace();
 			System.out.println("Disconnect with Client " + this.no);
-			clients.remove(this.no);
-			clientOutputStreams.remove(this.no);
-			clientSet.remove(this.no);
-
+		    try {
+				clients.get(this.no).close();
+			    clientOutputStreams.get(this.no).close();
+			    clients.remove(this.no);	
+			    clientOutputStreams.remove(this.no);		    
+			    clientSet.remove(this.no);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		  
 		}
 	}
-
-	//send a message to the output stream
-	public void sendMessage(String msg)
-	{
-		try{
-			out.writeObject(msg);
-			out.flush();
-		   }
-		catch(IOException ioException){
-			ioException.printStackTrace();
-		}
-	}
-	
-    }
+  }
     	
     public static class BroadCast{
     	private Socket connection;
@@ -199,6 +187,7 @@ public class Server {
         			try {
         	        	out=clientOutputStreams.get(clientNum);
         	        	message="Client"+clientSet.toArray()[i]+" is connected";
+       	        	    out.writeObject("MESSAGE");
 						out.writeObject(message);
 						out.flush();						
 					} catch (IOException e) {
@@ -300,6 +289,18 @@ public class Server {
 	        	 }
        	     }
         }
-                
+        
+      public void sendClientId(int clientNum){
+    	  String message="Your client Number is "+clientNum;
+    	  try {
+    		clientOutputStreams.get(clientNum).writeObject("MESSAGE");
+			clientOutputStreams.get(clientNum).writeObject(message);
+			clientOutputStreams.get(clientNum).flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	  
+      }
     }
 }
