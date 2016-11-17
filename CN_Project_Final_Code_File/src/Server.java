@@ -23,7 +23,6 @@ public class Server {
         	this.no = no;
     	}
 
-    	
     	//Runs the main thread for Server//
     	@SuppressWarnings("unchecked")
 		public void run() 
@@ -41,7 +40,6 @@ public class Server {
     			while(true)
     			{
     				try {
-						//HashMap<Integer,String[]> info = (HashMap<Integer, String[]>) in.readObject();
 						HashMap info = (HashMap)in.readObject();
 						int task = 0;
 						for(int i:(Set<Integer>)info.keySet())
@@ -60,19 +58,12 @@ public class Server {
 						}
 						
 					} catch (ClassNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						
+						e.printStackTrace();						
 					}
     			}
-
-    			
-    			
         	}catch(IOException ioException){
         		out_list.remove(this.no);
 			}
-        	
-        	
 	}
 
 
@@ -214,11 +205,6 @@ public class Server {
 			}
 		}
 		
-		
-		
-		
-		
-	
 	}
 	
 	

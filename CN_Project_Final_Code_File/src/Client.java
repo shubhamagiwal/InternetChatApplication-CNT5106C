@@ -18,16 +18,6 @@ public class Client {
 	public static int num = 0;
 	static String path = "C:\\Users\\Ekam Kalsi\\workspace\\CN Project\\Clients\\";
 	
-	public Client() 
-	{
-		
-	}
-	
-	
-	
-
-	
-	
 	//Runs the main thread for client//
 	void run()
 	{
@@ -68,15 +58,11 @@ public class Client {
 			try {
 				TimeUnit.MINUTES.sleep(1);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 			}
-			
-			
-			
 		}
-		catch (ConnectException e) {
-    			
+		catch (ConnectException e) {	
 			System.err.println("Connection refused. You need to initiate a server first.");
 		} 
 		catch(UnknownHostException unknownHost){
@@ -121,17 +107,14 @@ public class Client {
 				out.close();
 				System.out.println("You received the file " + name + "." + type);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 	}
-	
-	
 	
 	//Manages the receive thread//
 	void start_receive_thread(ObjectInputStream in)
@@ -175,7 +158,7 @@ public class Client {
 						}
 						else
 						{
-							System.out.println("You received a message: " + map.get(task)[0]);
+							System.out.println("The online client are: " + map.get(task)[0]);
 						}
 					}
 					
@@ -186,15 +169,15 @@ public class Client {
 				System.out.println("Wait a bit!!");
 				TimeUnit.SECONDS.sleep(2);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 			}
 			
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			System.exit(0);
 		}
 	}
@@ -227,7 +210,7 @@ public class Client {
 			out.writeObject(info);
 			out.flush();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 	}
@@ -240,7 +223,7 @@ public class Client {
 			out.writeObject(info);
 			out.flush();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 	}
@@ -250,7 +233,7 @@ public class Client {
 	//Create folder for client as soon as it is connected to the server//
 	public static void makeClientFolder(String name)
 	{
-		File file = new File("C:\\Users\\Ekam Kalsi\\workspace\\CN Project\\Clients\\" + name);
+		File file = new File(path + name);
         if (!file.exists()) {
             if (file.mkdir()) {
                 System.out.println("Directory is created!");

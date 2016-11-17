@@ -17,20 +17,6 @@ public class SelectTask {
 	static int sender;
 	static int task_global = 0;
 	
-//	public static void main(String[] args)
-//	{
-//		SelectTask st = new SelectTask();
-//		st.showTasks();
-//		st.select_task();
-//	}
-	
-	
-	public SelectTask()
-	{
-	}
-
-	
-	
 	public static void showTasks()
 	{
 		System.out.println("Tasks are as follows:-");
@@ -50,13 +36,11 @@ public class SelectTask {
 		try {
 			task = Integer.parseInt(br.readLine());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
+			
 		}
 		catch(NumberFormatException e)
 		{
 			System.out.println("I have exited.Bye");
-			
 		}
 		
 		task_global = task;
@@ -85,9 +69,7 @@ public class SelectTask {
 			HashMap<Integer,String[]> map = new HashMap<Integer,String[]>();
 			map.put(task, new String[]{});
 			return map;
-		}
-		
-		
+		}		
 	}
 	
 	
@@ -100,8 +82,7 @@ public class SelectTask {
 		String msg = null;
 		try {
 			msg = br.readLine();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (IOException e) {	
 			e.printStackTrace();
 		}
 		return msg;
@@ -114,24 +95,16 @@ public class SelectTask {
 		File file = new File(file_path[1]);
 		FileInputStream fis = null;
 		try {
-
-			
-
-			
 			byte [] fileBytes=new byte[(int)file.length()];
 		    InputStream is = new FileInputStream(file);
 		    System.out.println("Total file size to read (in bytes) : "
 					+ is.available());
 		    int c = 0;
-		    
 		    while ((c = is.read(fileBytes, 0, fileBytes.length)) > 0) 
-	        {
-	        }
-		    
+	        {}
 		    HashMap<String,byte[]> map = new HashMap<String,byte[]>();
 		    map.put(file_path[0], fileBytes);
 		    return map;
-			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -144,8 +117,7 @@ public class SelectTask {
 		}
 		return null;
 	}
- 	
-	
+ 
 	public static JFileChooser chooser = new JFileChooser();
 	public static String[] getFilePath()
 	{
@@ -158,10 +130,6 @@ public class SelectTask {
         return new String[]{chooser.getSelectedFile().getName(),chooser.getSelectedFile().getAbsolutePath()};
 	}
 	
-	
-	
-	
-	
 	public static String chooseClientBasedOnTask(int task)
 	{
 		String client_name = null;
@@ -169,44 +137,34 @@ public class SelectTask {
 		if(task==1 | task==2)
 		{
 			client_name = "all";
-		}
-		
-		
+		}	
 		else if(task==3)
 		{
 			System.out.println("Type the name of the client you want to send a private message:");
 			try {
 				client_name = br.readLine();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+			} catch (IOException e) {	
 				e.printStackTrace();
 			}
 		}
-		
-		
 		else if(task==4)
 		{
 			System.out.println("Type the name of the client you want to send a private file:");
 			try {
 				client_name = br.readLine();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+			} catch (IOException e) {		
 				e.printStackTrace();
 			}
 		}
-		
 		else
 		{
 			System.out.println("Type the name of the client you don't want to send a message:");
 			try {
 				client_name = br.readLine();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+			} catch (IOException e) {		
 				e.printStackTrace();
 			}
 		}
 		return client_name;
 	}
-	
-	
 }
