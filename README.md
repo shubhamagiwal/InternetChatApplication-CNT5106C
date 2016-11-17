@@ -42,3 +42,5 @@ NOTE(Conditions Apply)
 3. The file path where the directories for client to receive files is hardcoded in the programs.
 
 4. The port of the client is always 8000 and cannot be changed dynamically.
+
+5. Here the Client can unicast both file and message to himself.
