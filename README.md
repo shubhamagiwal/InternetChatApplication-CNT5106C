@@ -6,6 +6,7 @@ This is an Internet Chat Application based on Java Console for the course CNT510
 We have created a client server model. Here client sends a message or file to different clients via the server.
 
 The Basic Project outline to achieve the following 
+
 1. Broadcast of the raw message to all the clients.
 
 2. Unicast of the raw message to a particular client.
@@ -17,6 +18,7 @@ The Basic Project outline to achieve the following
 5. Unicast of a file to a particular client.
 
 Here the client is asked for his preference to send after connecting to the server and he must chose from the following options
+
 1->Broadcast a Text 
 
 2->Broadcast a File
@@ -32,6 +34,7 @@ Here the client is asked for his preference to send after connecting to the serv
 Based on the above options from 1 to 6 approriate inputs are asked from the client to be transfered to other client/clients. 
 
 NOTE(Conditions Apply)
+
 1. Currently tested for localhost environment.
 
 2. It is assumed that the client knows his/her client details.
