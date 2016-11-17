@@ -16,7 +16,7 @@ public class Client {
 	String MESSAGE;                //capitalized message read from the server
 	int username;
 	public static int num = 0;
-	static String path = "C:\\Users\\Ekam Kalsi\\workspace\\CN Project\\Clients\\"; // Important- File Path that needs to be changed for File transfer to the Client based on different systems. 
+	static String path = "C:\\Users\\Ekam Kalsi\\workspace\\CN Project\\Clients\\";
 	
 	public Client() 
 	{
@@ -28,7 +28,7 @@ public class Client {
 
 	
 	
-	
+	//Runs the main thread for client//
 	void run()
 	{
 		try
@@ -39,7 +39,6 @@ public class Client {
 			out.flush();
 			in = new ObjectInputStream(requestSocket.getInputStream());
 			System.out.println("Connected to localhost in port 8000");
-			System.out.println(num);
 			num++;
 			final Thread receive_thread = new Thread(new Runnable()
 			{
@@ -77,33 +76,20 @@ public class Client {
 			
 		}
 		catch (ConnectException e) {
-    			System.err.println("Connection refused. You need to initiate a server first.");
+    			
+			System.err.println("Connection refused. You need to initiate a server first.");
 		} 
-//		catch ( ClassNotFoundException e ) {
-//            		System.err.println("Class not found");
-//        	} 
 		catch(UnknownHostException unknownHost){
 			System.err.println("You are trying to connect to an unknown host!");
 		}
 		catch(IOException ioException){
 			ioException.printStackTrace();
 		}
-//		finally{
-//			//Close connections
-//			try{
-//				System.out.println("here!!");
-//				in.close();
-//				out.close();
-//				requestSocket.close();
-//			}
-//			catch(IOException ioException){
-//				ioException.printStackTrace();
-//			}
-//		}
+
 	}
 	
 	static boolean flag = true;
-	
+	//Creates the received file for the client//
 	public static void makeFile(HashMap<String,HashMap<String,byte[]>> map)
 	{
 		String client = "";
@@ -133,6 +119,7 @@ public class Client {
 			try {
 				out.write(file_content_arr, 0, file_content_arr.length);
 				out.close();
+				System.out.println("You received the file " + name + "." + type);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -146,7 +133,7 @@ public class Client {
 	
 	
 	
-	
+	//Manages the receive thread//
 	void start_receive_thread(ObjectInputStream in)
 	{
 		try {
@@ -158,13 +145,14 @@ public class Client {
 				task = i;
 			}
 			
-			
+			//Manages the file receives//
 			if(task==2 | task==4)
 			{
 				HashMap<Integer,HashMap<String,HashMap<String,byte[]>>> temp = (HashMap<Integer,HashMap<String,HashMap<String,byte[]>>>)msg;
 				HashMap<String,HashMap<String,byte[]>> map = (HashMap<String,HashMap<String,byte[]>>)msg.get(task);
 				makeFile(map);
 			}
+			//Manages the text and online client receive//
 			else
 			{
 				HashMap<Integer,String[]> map = (HashMap<Integer,String[]>)msg;
@@ -181,9 +169,25 @@ public class Client {
 					}
 					else
 					{
-						System.out.println("You received a message: " + map.get(task)[0]);
+						if(map.get(task)[0].equals(""))
+						{
+							System.out.println("You are the only online client.");
+						}
+						else
+						{
+							System.out.println("You received a message: " + map.get(task)[0]);
+						}
 					}
+					
 				}
+			}
+			
+			try {
+				System.out.println("Wait a bit!!");
+				TimeUnit.SECONDS.sleep(2);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			
 		} catch (ClassNotFoundException e) {
@@ -191,20 +195,23 @@ public class Client {
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.exit(0);
 		}
 	}
 	
+	//Start send thread//
 	void start_send_thread(ObjectOutputStream out)
 	{
 		SelectTask st = new SelectTask();
 		st.showTasks();
 		Object message = st.select_task();
+		//Managing all the file operations//
 		if(st.task_global==2 | st.task_global==4)
 		{
 			HashMap<Integer,HashMap<String,HashMap<String,byte[]>>> info = (HashMap<Integer,HashMap<String,HashMap<String,byte[]>>>)message;
 			send_file_to_server(info);
 		}
+		//Manages all text and getting online client operations//
 		else
 		{
 			HashMap<Integer,String[]> info = (HashMap<Integer,String[]>)message;
@@ -213,6 +220,7 @@ public class Client {
 		
 	}
 	
+	//Send any file the server// 
 	void send_file_to_server(HashMap<Integer,HashMap<String,HashMap<String,byte[]>>> info)
 	{
 		try {
@@ -224,7 +232,7 @@ public class Client {
 		}
 	}
 	
-	
+	//Send any text to the server//
 	void send_text_to_server(HashMap<Integer,String[]> info)
 	{
 		
@@ -239,7 +247,7 @@ public class Client {
 	
 	
 
-	
+	//Create folder for client as soon as it is connected to the server//
 	public static void makeClientFolder(String name)
 	{
 		File file = new File("C:\\Users\\Ekam Kalsi\\workspace\\CN Project\\Clients\\" + name);
@@ -256,24 +264,8 @@ public class Client {
 	
 	public static void main(String args[])
 	{
-//		HashMap<String,Client> client_map = new HashMap<String,Client>();
-//		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-//		System.out.println("Enter a username:");
-//		String name = "";
-//		try {
-//			name = name + br.readLine();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
 		Client client = new Client();
 		client.run();
-			
-			
-			
-		
-				
 	}
 
 

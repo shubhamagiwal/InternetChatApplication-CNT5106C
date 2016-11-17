@@ -20,11 +20,12 @@ public class Server {
     	public Handler(Socket connection, int no)
     	{
         	this.connection = connection;
-        	System.out.println(no);	
-    		this.no = no;
+        	this.no = no;
     	}
 
-        @SuppressWarnings("unchecked")
+    	
+    	//Runs the main thread for Server//
+    	@SuppressWarnings("unchecked")
 		public void run() 
         {
         	try
@@ -72,57 +73,10 @@ public class Server {
 			}
         	
         	
-//	 		try
-//	 		{
-//	 			//Initialize a single output and input stream
-////	 			ObjectOutputStream out = new ObjectOutputStream(connection.getOutputStream());
-////				out.flush();
-////	 			in = new ObjectInputStream(connection.getInputStream());
-//	 			//Add to the list of other output and input streams, hence creating multiple server client connections//
-//	 			//out_list.add(out);
-//	 			try
-//	 			{
-//					while(true)
-//					{
-//						System.out.println("Client" + this.no);
-//						//decodeAndSendMessage(task,message_by_client);
-//					}
-//				}
-//				catch(ClassNotFoundException classnot){
-//						System.err.println("Data received in unknown format");
-//					}
-//			}
-//			catch(IOException ioException){
-//				System.out.println("Disconnect with Client " + no);
-//			}
-//			finally{
-//				//Close connections
-//				try
-//				{
-////					in.close();
-////					out_list.get(clientNum).flush();
-////					connection.close();
-//				}
-//				catch(IOException ioException){
-//					System.out.println("Disconnect with Client " + no);
-//				}
-//			}
 	}
 
-//		public void sendMessage(String msg)
-//		{
-//			try
-//			{
-//				out.writeObject(msg);
-//				out.flush();
-//				System.out.println("Send message: " + msg + " to Client " + no);
-//			}
-//			catch(IOException ioException){
-//				ioException.printStackTrace();
-//			}
-//		}
 
-        
+        //Manages the task of decoding and sending the file to various clients//
         public void decodeAndSendFile(int task,HashMap<String,HashMap<String,byte[]>> map)
         {
         	if(task==2)
@@ -151,10 +105,9 @@ public class Server {
         }
         
         
-
+        //Decode and send message, also send online client information//
 		public void decodeAndSendMessage(int task,String[] arr)
 		{
-			System.out.println("I am here");
 			HashMap<Integer,String[]> map = new HashMap<Integer,String[]>();
 			map.put(task, arr);
 			//broadcast message or file//
@@ -175,14 +128,12 @@ public class Server {
 			else if(task==3 | task==4)
 			{
 				String client = arr[0];
-				System.out.println("The client is " + client);
 				for(int i=0;i<out_list.size();i++)
 				{
 					if(i==Integer.parseInt(client))
 					{
 						if(task==3)
 						{
-							System.out.println("hey i am here");
 							sendMessage(out_list.get(i),map);
 							return;
 						}
@@ -206,7 +157,6 @@ public class Server {
 			
 			else
 			{
-				System.out.println(this.no);
 				String msg = "";
 				for(int i=0;i<out_list.size();i++)
 				{
@@ -223,12 +173,11 @@ public class Server {
 		}
 		
 		
-		
+		//send message to client, task->message//
 		public void sendMessage(ObjectOutputStream out,HashMap<Integer,String[]> info)
 		{
 			try
 			{
-				System.out.println("I am here");
 				out.writeObject(info);
 				out.flush();
 			}
@@ -237,6 +186,8 @@ public class Server {
 			}
 		}
 		
+		
+		//Send file to client(s) using the formt, task->receiver_client->file_content(path,data)//
 		public void sendFile(ObjectOutputStream out,HashMap<String,HashMap<String,byte[]>> msg,int task,int receiver_client)
 		{
 			try
@@ -257,7 +208,6 @@ public class Server {
 				
 				out.writeObject(return_map);
 				out.flush();
-				System.out.println("Send message: " + msg + " to Client " + no);
 			}
 			catch(IOException ioException){
 				ioException.printStackTrace();
