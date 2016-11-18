@@ -74,7 +74,8 @@ public class Server {
         	{
         		for(int i=0;i<out_list.size();i++)
 				{
-					sendFile(out_list.get(i),map,task,i);
+					if(i!=this.no)
+						sendFile(out_list.get(i),map,task,i);
 				}
         	}
         	else
@@ -108,7 +109,8 @@ public class Server {
 				{
 					if(task==1)
 					{
-						sendMessage(out_list.get(i),map);
+						if(i!=this.no)
+							sendMessage(out_list.get(i),map);
 					}
 					
 				}
