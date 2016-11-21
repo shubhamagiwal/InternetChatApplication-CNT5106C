@@ -62,7 +62,8 @@ public class Server {
 					}
     			}
         	}catch(IOException ioException){
-        		out_list.remove(this.no);
+        		System.out.println("Client " + this.no + "is disconnected");
+        		out_list.set(this.no, null);
 			}
 	}
 
@@ -74,7 +75,7 @@ public class Server {
         	{
         		for(int i=0;i<out_list.size();i++)
 				{
-					if(i!=this.no)
+					if(i!=this.no & out_list.get(i)!=null)
 						sendFile(out_list.get(i),map,task,i);
 				}
         	}
@@ -88,7 +89,7 @@ public class Server {
         		
         		for(int i=0;i<out_list.size();i++)
         		{
-        			if(i==Integer.parseInt(client))
+        			if(i==Integer.parseInt(client) & out_list.get(i)!=null)
         			{
         				sendFile(out_list.get(i),map,task,i);
         			}
@@ -101,7 +102,15 @@ public class Server {
 		public void decodeAndSendMessage(int task,String[] arr)
 		{
 			HashMap<Integer,String[]> map = new HashMap<Integer,String[]>();
-			map.put(task, arr);
+			if(task!=6)
+			{
+				String[] temp_arr = new String[arr.length + 1];
+				temp_arr[0] = arr[0];
+				temp_arr[1] = arr[1];
+				temp_arr[2] = this.no + "";
+				map.put(task, temp_arr);
+			}
+			
 			//broadcast message or file//
 			if(task==1 | task==2)
 			{
@@ -109,7 +118,7 @@ public class Server {
 				{
 					if(task==1)
 					{
-						if(i!=this.no)
+						if(i!=this.no & out_list.get(i)!=null)
 							sendMessage(out_list.get(i),map);
 					}
 					
@@ -125,7 +134,7 @@ public class Server {
 				{
 					if(i==Integer.parseInt(client))
 					{
-						if(task==3)
+						if(task==3 & out_list.get(i)!=null)
 						{
 							sendMessage(out_list.get(i),map);
 							return;
@@ -141,7 +150,7 @@ public class Server {
 				for(int i=0;i<out_list.size();i++)
 				{
 					String client = arr[0];
-					if(i!=Integer.parseInt(client))
+					if(i!=Integer.parseInt(client) & out_list.get(i)!=null)
 					{
 						sendMessage(out_list.get(i),map);
 					}
@@ -153,7 +162,7 @@ public class Server {
 				String msg = "";
 				for(int i=0;i<out_list.size();i++)
 				{
-					if(i!=this.no)
+					if(i!=this.no & out_list.get(i)!=null)
 					{
 						msg = msg + "Client" + i + "\n"; 
 					}
@@ -196,8 +205,11 @@ public class Server {
 				HashMap<String,HashMap<String,byte[]>> map = new HashMap<String,HashMap<String,byte[]>>();
 				map.put(receiver_client+"", file_content);
 				
-				HashMap<Integer,HashMap<String,HashMap<String,byte[]>>> return_map = new HashMap<Integer,HashMap<String,HashMap<String,byte[]>>>();
-				return_map.put(task, map);
+				HashMap<String, HashMap<String,HashMap<String,byte[]>>> sender_map = new HashMap<String, HashMap<String,HashMap<String,byte[]>>>();
+				sender_map.put(this.no + "", map);
+				
+				HashMap<Integer,HashMap<String, HashMap<String,HashMap<String,byte[]>>>> return_map = new HashMap<Integer,HashMap<String, HashMap<String,HashMap<String,byte[]>>>>();
+				return_map.put(task, sender_map);
 				
 				out.writeObject(return_map);
 				out.flush();

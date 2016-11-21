@@ -55,12 +55,7 @@ public class Client {
 			});
 			send_thread.start();
 			
-			try {
-				TimeUnit.MINUTES.sleep(1);
-			} catch (InterruptedException e) {
-				
-				e.printStackTrace();
-			}
+			
 		}
 		catch (ConnectException e) {	
 			System.err.println("Connection refused. You need to initiate a server first.");
@@ -76,8 +71,16 @@ public class Client {
 	
 	static boolean flag = true;
 	//Creates the received file for the client//
-	public static void makeFile(HashMap<String,HashMap<String,byte[]>> map)
+	public static void makeFile(HashMap<String, HashMap<String,HashMap<String,byte[]>>> sender_map)
 	{
+		String sender = "";
+		for(String str:sender_map.keySet())
+		{
+			sender = str;
+		}
+		
+		HashMap<String,HashMap<String,byte[]>> map = sender_map.get(sender);
+		
 		String client = "";
 		for(String str:map.keySet())
 		{
@@ -105,7 +108,7 @@ public class Client {
 			try {
 				out.write(file_content_arr, 0, file_content_arr.length);
 				out.close();
-				System.out.println("You received the file " + name + "." + type);
+				System.out.println("You received the file " + name + "." + type + " from Client " + sender);
 			} catch (IOException e) {
 				
 				e.printStackTrace();
@@ -131,8 +134,8 @@ public class Client {
 			//Manages the file receives//
 			if(task==2 | task==4)
 			{
-				HashMap<Integer,HashMap<String,HashMap<String,byte[]>>> temp = (HashMap<Integer,HashMap<String,HashMap<String,byte[]>>>)msg;
-				HashMap<String,HashMap<String,byte[]>> map = (HashMap<String,HashMap<String,byte[]>>)msg.get(task);
+				HashMap<Integer,HashMap<String, HashMap<String,HashMap<String,byte[]>>>> temp = (HashMap<Integer,HashMap<String, HashMap<String,HashMap<String,byte[]>>>>)msg;
+				HashMap<String, HashMap<String,HashMap<String,byte[]>>> map = (HashMap<String, HashMap<String,HashMap<String,byte[]>>>)msg.get(task);
 				makeFile(map);
 			}
 			//Manages the text and online client receive//
@@ -148,7 +151,7 @@ public class Client {
 				{
 					if(task==1 | task==3 | task==5)
 					{
-						System.out.println("You received a message: " + map.get(task)[1]);
+						System.out.println("You received a message from Client " + map.get(task)[2] + ": " + map.get(task)[1]);
 					}
 					else
 					{
@@ -158,26 +161,26 @@ public class Client {
 						}
 						else
 						{
-							System.out.println("The online client are: " + map.get(task)[0]);
+							System.out.println("The online clients are:");
+							System.out.println(map.get(task)[0]);
 						}
 					}
 					
 				}
 			}
 			
-			try {
-				System.out.println("Wait a bit!!");
-				TimeUnit.SECONDS.sleep(2);
-			} catch (InterruptedException e) {
-				
-				e.printStackTrace();
-			}
+//			try {
+//				System.out.println("Wait a bit!!");
+//				TimeUnit.SECONDS.sleep(2);
+//			} catch (InterruptedException e) {
+//				
+//				e.printStackTrace();
+//			}
 			
 		} catch (ClassNotFoundException e) {
 			
 			e.printStackTrace();
 		} catch (IOException e) {
-			
 			System.exit(0);
 		}
 	}
@@ -195,10 +198,14 @@ public class Client {
 			send_file_to_server(info);
 		}
 		//Manages all text and getting online client operations//
-		else
+		else if(st.task_global==1 | st.task_global==3 | st.task_global==5 | st.task_global==6)
 		{
 			HashMap<Integer,String[]> info = (HashMap<Integer,String[]>)message;
 			send_text_to_server(info);
+		}
+		else
+		{
+			System.exit(0);
 		}
 		
 	}
